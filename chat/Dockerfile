@@ -10,11 +10,11 @@ ENV PYTHONUNBUFFERED 1
 
 # install python dependencies
 RUN pip install --upgrade pip
-COPY ./chat/requirements.txt .
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # add app
-COPY ./chat .
+COPY . .
 
 # default port
 EXPOSE 8000/tcp

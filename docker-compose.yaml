@@ -5,6 +5,7 @@ services:
   chat:
     image: chat
     build: ./chat
+    container_name: chat
     env_file:
       - ./chat/.env.example
     ports:
