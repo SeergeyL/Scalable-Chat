@@ -1,0 +1,25 @@
+version: '3.5'
+
+
+services:
+  chat:
+    image: chat
+    build: ./chat
+    env_file:
+      - ./chat/.env.example
+    ports:
+      - 8000:8000
+
+  broker:
+    image: redis:7.0.7-alpine
+    container_name: broker
+    expose:
+      - 6379
+
+  cassandra:
+    image: cassandra:4.1.0
+    container_name: cassandra
+    volumes:
+      - ./cassandra/model.cql:/scripts/model.cql
+    expose:
+      - 9042
