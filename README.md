@@ -15,7 +15,7 @@ In this application Redis provides fast in-memory pub/sub for real-time communic
 
 
 ## Run containers
-Start the containers
+Start the containers with default parameters or configure the project's environment variables in chat/.env.example
 ```
 docker-compose up -d
 ```
@@ -42,3 +42,11 @@ Where event represents one of the following
 | message:message | New message was sent to the websocket      |
 | message:edit    | Message update event sent to the websocket |
 | message:delete  | Message delete event sent to the websocket |
+
+
+# TODO
+
+- [ ] Add Kafka Cassandra Source Connector and Elasticseach Sink Connector
+- [ ] Write api to access data from Cassandra and Elasticsearch
+- [ ] Add service discovery to balance the load between websocket servers
+- [ ] Cassandra driver can't be used with async/await syntax, replace with asynchronous wrapper
