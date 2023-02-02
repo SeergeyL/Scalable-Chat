@@ -26,7 +26,7 @@ make create-models
 
 After that any application can connect to the server via websocket connection
 ```javascript
-let ws = new WebSocket('ws://localhost:8000/ws/chat/{chat_id}/?token={token}')
+let ws = new WebSocket('ws://localhost:8000/ws/chat/{chat_id}?token={token}')
 ```
 
 Message sent to the websocket follows the model below:
@@ -50,3 +50,4 @@ Where event represents one of the following
 - [ ] Write api to access data from Cassandra and Elasticsearch
 - [ ] Add service discovery to balance the load between websocket servers
 - [ ] Cassandra driver can't be used with async/await syntax, replace with asynchronous wrapper
+- [ ] Wrtie functional tests using pytest
