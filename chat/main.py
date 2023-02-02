@@ -15,19 +15,8 @@ from pydantic import BaseModel, ValidationError
 
 app = FastAPI()
 redis: aioredis.Redis = None
-
-
-profile = ExecutionProfile(
-    load_balancing_policy=RoundRobinPolicy(),
-    consistency_level=ConsistencyLevel.QUORUM,
-    row_factory=dict_factory
-)
-cluster = Cluster(
-    [config.CASSANDRA_CLUSTER_HOST],
-    port=config.CASSANDRA_CLUSTER_PORT,
-    execution_profiles={EXEC_PROFILE_DEFAULT: profile},
-)
-session = cluster.connect(config.CASSANDRA_CLUSTER_KEYSPACE)
+cassandra_cluster = None
+cassandra_session = None
 
 
 class ChatMessage(BaseModel):
@@ -49,7 +38,7 @@ def save_message_to_cassandra(message: ChatMessageExtended):
         INSERT INTO messages_by_chat (chat_id, created_at, user_from, message)
         VALUES (%(chat_id)s, %(created_at)s, %(user_from)s, %(message)s)
     """
-    session.execute(query, message.dict())
+    cassandra_session.execute(query, message.dict())
 
 
 async def chat_consumer(ws: WebSocket, chat_id: uuid.UUID):
@@ -138,17 +127,41 @@ async def websocket_endpoint(
 
 @app.on_event("startup")
 async def startup():
-    global redis
+    global redis, cassandra_cluster, cassandra_session
+
+    # Wait for external services to be in running state
+    from waiters import wait_for_cassandra, wait_for_redis
+    wait_for_redis.wait_for_redis()
+    wait_for_cassandra.wait_for_cassandra()
+
+    # Setup Redis
     pool = aioredis.ConnectionPool.from_url(
         config.REDIS_CONNECTION_STRING,
         max_connections=128
     )
     redis = aioredis.Redis(connection_pool=pool)
 
+    # Setup Cassandra
+    profile = ExecutionProfile(
+        load_balancing_policy=RoundRobinPolicy(),
+        consistency_level=ConsistencyLevel.QUORUM,
+        row_factory=dict_factory
+    )
+    cassandra_cluster = Cluster(
+        [config.CASSANDRA_CLUSTER_HOST],
+        port=config.CASSANDRA_CLUSTER_PORT,
+        execution_profiles={EXEC_PROFILE_DEFAULT: profile},
+    )
+    cassandra_session = cassandra_cluster.connect(
+        config.CASSANDRA_CLUSTER_KEYSPACE
+    )
+
 
 @app.on_event("shutdown")
 async def shutdown():
     await redis.close()
+    cassandra_session.close()
+    cassandra_cluster.close()
 
 
 if __name__ == '__main__':
