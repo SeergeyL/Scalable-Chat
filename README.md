@@ -9,7 +9,7 @@ Application stack:
 
 
 ## Application Architecture
-![architecture](https://www.dropbox.com/s/itx3u8m2gerarc3/architecture.png?dl=0)
+![architecture](https://uc583fcec2add7a8da090f32d27c.previews.dropboxusercontent.com/p/thumb/ABzfENvKKPBKt_f0Labt3VLgHz64WMKnB1eLR-WOQ0kvTAaDsMo5VPjAJ91Bl7KmTzFlT-E2Gb0nVC6N2fA0SQxAsO2pX4QVDMO_ScLPrRlMkceX-7sJfORkxoQEbVdlNX8bLD8u6y62YYMaf6oCIuSGxXJEdvOEMyswuRqGIUujXk9mCB66hCHg2NZb166AEiIdAmMK_sIWMX5JMQeDosk55t_TMFZDX8SZnFlesq4zSpwaVPYr_wG9aN_ViKS93la-Th_mX9ZfGCJmxNjFOc7s1vF-K23wQTfiKb8lGBqZV4Q8zi_dQr6COo49-rf2hTCw36IFlkCtOHYZdvYkaK4Hh5whOIWJSJ4m0i1405mPzlUOGFy_urogqNnlt2yO5_GMOPmdwmf5O-Mv_UsvVX4BZKbPtorOQWVUnPNuW43qPw/p.png)
 
 In this application Redis provides fast in-memory pub/sub for real-time communication between websockets. The lack of durability in data is compensated by Cassandra: fast, highly available and scalable storage.
 
