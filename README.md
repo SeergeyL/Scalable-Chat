@@ -50,4 +50,5 @@ Where event represents one of the following
 - [ ] Write api to access data from Cassandra and Elasticsearch
 - [ ] Add service discovery to balance the load between websocket servers
 - [ ] Cassandra driver can't be used with async/await syntax, replace with asynchronous wrapper
+- [ ] Change partition key in Cassandra to more appropriate. Current pk will make partitions too large after a while
 - [ ] Wrtie functional tests using pytest
