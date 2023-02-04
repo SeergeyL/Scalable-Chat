@@ -6,7 +6,8 @@ import uuid
 import aioredis
 import config
 import uvicorn
-from cassandra.cluster import EXEC_PROFILE_DEFAULT, Cluster, ExecutionProfile
+from cassandra.cluster import (EXEC_PROFILE_DEFAULT, Cluster, ExecutionProfile,
+                               Session)
 from cassandra.policies import ConsistencyLevel, RoundRobinPolicy
 from cassandra.query import dict_factory
 from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
@@ -15,8 +16,8 @@ from pydantic import BaseModel, ValidationError
 
 app = FastAPI()
 redis: aioredis.Redis = None
-cassandra_cluster = None
-cassandra_session = None
+cassandra_cluster: Cluster = None
+cassandra_session: Session = None
 
 
 class ChatMessage(BaseModel):
@@ -30,7 +31,7 @@ class ChatMessageExtended(ChatMessage):
     user_from: uuid.UUID
 
 
-def save_message_to_cassandra(message: ChatMessageExtended):
+async def save_message_to_cassandra(message: ChatMessageExtended):
     """
     Saves message to cassandra table.
     """
@@ -38,7 +39,13 @@ def save_message_to_cassandra(message: ChatMessageExtended):
         INSERT INTO messages_by_chat (chat_id, created_at, user_from, message)
         VALUES (%(chat_id)s, %(created_at)s, %(user_from)s, %(message)s)
     """
-    cassandra_session.execute(query, message.dict())
+    future = cassandra_session.execute_async(query, message.dict())
+
+    # Simple workaround to give control back to the event loop
+    # in order to handle the future when it will be ready.
+    # But there is no guruntee that it will be ready (May face with blocking).
+    # Better to use async wrapper
+    await asyncio.sleep(0)
 
 
 async def chat_consumer(ws: WebSocket, chat_id: uuid.UUID):
@@ -89,7 +96,7 @@ async def chat_producer(ws: WebSocket, chat_id: uuid.UUID, user_id: uuid.UUID):
             user_from=user_id,
             created_at=datetime.datetime.now()
         )
-        save_message_to_cassandra(message)
+        await save_message_to_cassandra(message)
         await redis.publish(str(chat_id), message.json())
 
 
